@@ -1,75 +1,289 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on multiple platforms
+{<font></font>
+  "log": {<font></font>
+      "disabled": false,<font></font>
+            "level": "warn",<font></font>
+            "output": "/tmp/sing-box.log",<font></font>
+            "timestamp": true<font></font>
+  },<font></font>
+  "log": {<font></font>
+    "level": "info",<font></font>
+    "timestamp": true<font></font>
+  },<font></font>
+  "dns": {<font></font>
+    "independent_cache": true,<font></font>
+    "rules": [<font></font>
+      {<font></font>
+        "domain": [<font></font>
+          "00.00.00.00" //Your VPS’s IP<font></font>
+        ],<font></font>
+        "server": "dns-direct"<font></font>
+      },<font></font>
+      {<font></font>
+        "outbound": "direct",<font></font>
+        "server": "dns-direct"<font></font>
+      }<font></font>
+    ],<font></font>
+    "servers": [<font></font>
+      {<font></font>
+        "address": "tcp://1.1.1.2",<font></font>
+        "strategy": "prefer_ipv6",<font></font>
+        "tag": "dns-remote"<font></font>
+      },<font></font>
+      {<font></font>
+        "address": "tcp://8.8.8.8",<font></font>
+        "detour": "direct",<font></font>
+        "strategy": "prefer_ipv6",<font></font>
+        "tag": "dns-direct"<font></font>
+      }<font></font>
+    ]<font></font>
+  },<font></font>
+    "inbounds": [<font></font>
+        {<font></font>
+            "auto_route": true,<font></font>
+            "strict_route": true,<font></font>
+            "domain_strategy": "",<font></font>
+            "endpoint_independent_nat": false,<font></font>
+            "inet4_address": "172.19.0.1/28",<font></font>
+            "interface_name": "nekoray-tun",<font></font>
+            "mtu": 1500,<font></font>
+            "sniff": true,<font></font>
+            "sniff_override_destination": false,<font></font>
+            "stack": "system",<font></font>
+            "tag": "tun-in",<font></font>
+            "type": "tun"<font></font>
+        }<font></font>
+    ],<font></font>
+  "log": {<font></font>
+    "level": "error"<font></font>
+  },<font></font>
+    "outbounds": [<font></font>
+        {<font></font>
+            "type": "vless",<font></font>
+            "tag": "vless-out",<font></font>
+            "server": "00.00.00.00", //Your VPS’s IP<font></font>
+            "server_port": 4650,<font></font>
+            "detour": "hy2-out",<font></font>
+            "uuid": "5b6299db-5406-4826-9aa7-ae619cf43962", //vless node password (uuid)<font></font>
+            "flow": "",<font></font>
+            "transport": {<font></font>
+                "service_name": "hy2-srv",  //Service name hare<font></font>
+                "type": "grpc",<font></font>
+                "idle_timeout": "5s",<font></font>
+                "ping_timeout": "3s"<font></font>
+            }<font></font>
+        },<font></font>
+        {<font></font>
+            "server": "00.00.00.00", //Your VPS’s IP<font></font>
+            "server_port": 8443,<font></font>
+            "password": "123456789",<font></font>
+            "tls": {<font></font>
+                "enabled": true,<font></font>
+                "server_name": "www.apple.com", //Handshake server address<font></font>
+                "alpn": [<font></font>
+                    "h3"<font></font>
+                ],<font></font>
+                "insecure": true<font></font>
+            },<font></font>
+            "type": "hysteria2",<font></font>
+            "tag": "hy2-out"<font></font>
+        },<font></font>
+        {<font></font>
+            "tag": "direct",<font></font>
+            "type": "direct"<font></font>
+        },<font></font>
+        {<font></font>
+            "tag": "bypass",<font></font>
+            "type": "direct"<font></font>
+        },<font></font>
+        {<font></font>
+            "tag": "block",<font></font>
+            "type": "block"<font></font>
+        },<font></font>
+        {<font></font>
+            "tag": "dns-out",<font></font>
+            "type": "dns"<font></font>
+        }<font></font>
+    ],<font></font>
+  "route": {<font></font>
+    "auto_detect_interface": true,<font></font>
+    "geoip": {<font></font>
+    "download_detour": "direct",<font></font>
+    "download_url": "https://github.com/SagerNet/sing-geoip/releases/geoip.db"
+<font></font>
+    },
+    "rules": [<font></font>
+      {<font></font>
+        "outbound": "dns-out",<font></font>
+        "protocol": "dns"<font></font>
+      },<font></font>
+      {<font></font>
+        "geoip": [<font></font>
+          "ir",<font></font>
+          "private"<font></font>
+        ],<font></font>
+        "domain_suffix": [<font></font>
+          "google.com"<font></font>
+        ],<font></font>
+        "outbound": "bypass"<font></font>
+      },<font></font>
+      {<font></font>
+        "ip_cidr": [<font></font>
+          "224.0.0.0/3",<font></font>
+          "ff00::/8"<font></font>
+        ],<font></font>
+        "outbound": "block",<font></font>
+        "source_ip_cidr": [<font></font>
+          "224.0.0.0/3",<font></font>
+          "ff00::/8"<font></font>
+        ]<font></font>
+      }<font></font>
+    ]<font></font>
+  }<font></font>
+}
 
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
-jobs:
-  build:
-    runs-on: ${{ matrix.os }}
 
-    strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
-      fail-fast: false
+แก้ไขแล้ว
 
-      # Set up a matrix to run the following 3 configurations:
-      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
-      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
-      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
-      #
-      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
-        c_compiler: [gcc, clang, cl]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
 
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }}
-
-    - name: Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
-    - name: Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
+{
+  "log": {
+      "disabled": false,
+            "level": "warn",
+            "output": "/tmp/sing-box.log",/font
+    "timestamp": true
+  },
+  "log": {
+    "level": "info",
+    "timestamp": true
+  },
+  "dns": {
+    "independent_cache": true,
+    "rules": [
+      {
+        "domain": [
+          "00.00.00.00"
+        ],
+        "server": "dns-direct"
+      },
+      {
+        "outbound": "direct",
+        "server": "dns-direct"
+      }
+    ],
+    "servers": [
+      {
+        "address": "tcp://1.1.1.2",
+        "strategy": "prefer_ipv6",
+        "tag": "dns-remote"
+      },
+      {
+        "address": "tcp://8.8.8.8",
+        "detour": "direct",
+        "strategy": "prefer_ipv6",
+        "tag": "dns-direct"
+      }
+    ]
+  },
+    "inbounds": [
+        {
+            "auto_route": true,
+            "strict_route": true,
+            "domain_strategy": "",
+            "endpoint_independent_nat": false,
+            "inet4_address": "172.19.0.1/28",
+            "interface_name": "nekoray-tun",
+            "mtu": 1500,
+            "sniff": true,
+            "sniff_override_destination": false,
+            "stack": "system",
+            "tag": "tun-in",
+            "type": "tun"
+        }
+    ],
+  "log": {
+    "level": "error"
+  },
+    "outbounds": [
+        {
+            "type": "vless",<font></font>
+            "tag": "vless-out",<font></font>
+            "server": "00.00.00.00", 
+            "server_port": 4650,
+            "detour": "hy2-out",
+            "uuid": "5b6299db-5406-4826-9aa7-ae619cf43962", 
+            "flow": "",
+            "transport": {
+                "service_name": "hy2-srv", 
+                "type": "grpc",
+                "idle_timeout": "5s",
+                "ping_timeout": "3s"
+            }
+        },
+        {
+            "server": "00.00.00.00",
+            "server_port": 8443,
+            "password": "123456789",
+            "tls": {
+                "enabled": true,
+                "server_name": "www.apple.com", 
+                "alpn": [
+                    "h3"
+                ],
+                "insecure": true
+            },
+            "type": "hysteria2",
+            "tag": "hy2-out"
+        },
+        {
+            "tag": "direct",
+            "type": "direct"
+        },
+        {
+            "tag": "bypass",
+            "type": "direct"
+        },
+        {
+            "tag": "block",
+            "type": "block"
+        },
+        {
+            "tag": "dns-out",
+            "type": "dns"
+        }
+    ],
+  "route": {
+    "auto_detect_interface": true,
+    "geoip": {
+    "download_detour": "direct",
+    "download_url": "https://github.com/SagerNet/sing-geoip/releases/geoip.db
+    },
+    "rules": [
+      {
+        "outbound": "dns-out",
+        "protocol": "dns"
+      },
+      {
+        "geoip": [
+          "ir",
+          "private"
+        ],
+        "domain_suffix": [
+          "google.com"
+        ],
+        "outbound": "bypass"
+      },
+      {
+        "ip_cidr": [
+          "224.0.0.0/3",
+          "ff00::/8"
+        ],
+        "outbound": "block",
+        "source_ip_cidr": [
+          "224.0.0.0/3",
+          "ff00::/8"
+        ]
+      }
+    ]
+  }
+}
