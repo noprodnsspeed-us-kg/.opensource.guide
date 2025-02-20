@@ -1,2 +1,2 @@
-include ':sevenzipjbinding'
+includeinclude ':sevenzipjbinding'
 rootProject.name='SevenZipJBinding'
